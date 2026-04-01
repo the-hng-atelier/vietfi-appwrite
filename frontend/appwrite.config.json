@@ -1,0 +1,7 @@
+{
+  "projectId": "<your_project_id>",
+  "platform": {
+    "name": "web",
+    "hostname": "<your-domain>"
+  }
+}
