@@ -1,0 +1,12 @@
+{
+  "name": "chat-vetvang",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "node-appwrite": "^13.0.0",
+    "@google/generative-ai": "^0.21.0"
+  }
+}
