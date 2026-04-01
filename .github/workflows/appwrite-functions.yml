@@ -1,0 +1,56 @@
+name: Deploy Appwrite Functions
+
+on:
+  push:
+    branches: [main]
+    paths: ["functions/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/**/package-lock.json
+
+      - name: Install Appwrite CLI
+        run: npm install -g appwrite
+
+      - name: Setup Appwrite
+        uses: appwrite/setup-for-appwrite@v2
+        with:
+          method: key
+          key: ${{ secrets.APPWRITE_API_KEY }}
+          project: ${{ secrets.APPWRITE_PROJECT_ID }}
+
+      - name: Install function dependencies
+        run: |
+          for dir in functions/*/; do
+            if [ -f "$dir/package.json" ]; then
+              echo "Installing deps in $dir"
+              npm install --prefix "$dir"
+            fi
+          done
+
+      - name: Build functions
+        run: |
+          for dir in functions/*/; do
+            if [ -f "$dir/tsconfig.json" ]; then
+              echo "Building $dir"
+              npx tsc --project "$dir/tsconfig.json" --outDir "$dir/dist" 2>&1 || true
+            fi
+          done
+
+      - name: Deploy functions
+        run: appwrite push functions --force
+        env:
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
